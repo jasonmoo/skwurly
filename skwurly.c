@@ -116,7 +116,7 @@ int main(int argc, char** argv){
 	printf("%s\n",out );
 	out = url_sort("http://localhost/test?bbb=222&ccc=333&ddd=444&aaa=111");
 	printf("%s\n",out );
-	out = url_sort("http://localhost/test?bbb=222&ccc=333&ddd=444&aaa=111&bbbb=1234&ccccccc=0");
+	out = url_sort("http://localhost/test?bbb=222&ccc=ßß∞§•øø&ddd=444&aaa=111&bbbb=1234&ccccccc=0");
 	printf("%s\n",out );
 	out = url_sort("http://localhost/test?bbb=222&cbcc=333&ddd=444&dddf=444&aaa=111&bbbb=1234&ccccccc=0&zaaaa=89&ccc=987987");
 	printf("%s\n",out );
