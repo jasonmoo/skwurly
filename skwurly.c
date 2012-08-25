@@ -1,27 +1,12 @@
+#include "skwurly.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 
-void sort_params(int** params, int count, const char* url) {
-	int swap[2];
+int param_compare(const void* a, const void* b) {
 
-	int max, i, j;
-
-	// simple insertion sort
-	for(i = 1; i != count; ++i) {
-		for(j = i; j > 0; --j) {
-
-			// determine shortest length to compare
-			max = url[params[j][1]] > url[params[j-1][1]] ? url[params[j-1][1]] : url[params[j][1]];
-
-			if (memcmp(&url[params[j][1]], &url[params[j-1][1]], max) == 1) {
-				swap = params[j];
-				params[j] = params[j - 1];
-				params[j - 1] = swap;
-			}
-
-		}
-	}
+		return strcmp((*(param*)a).start, (*(param*)b).start);
 
 }
 
@@ -30,7 +15,7 @@ char* url_sort(const char* url){
 	const char* i = url;
 	int len = 0, count = 0;
 
-	// iniatial scan to see what needs to be done
+	// initial scan to see what needs to be done
 	while (*i != '\0') {
 		// count the string length
 		++len;
@@ -49,72 +34,69 @@ char* url_sort(const char* url){
 	}
 
 	// initialize the params offset array
-	int params[count][2];
+	param params[count];
 
 	// reset pointer to beginning of string
 	// reuse count to track what param we're on
 	i = url;
 	count = -1;
-	int in = 0, c = 0;
+	int in = 0;
 
 	// scan to build params set
 	while (*i != '\0') {
 
 		// note the start of the param
 		if (*i == '&' || *i == '?') {
-			params[++count][0] = c+1;
-			params[count][1] = -1;
+			params[++count].start = i+1;
+			params[count].length = -1;
 			in = 1;
 		}
 
 		// count the length of the param
 		if (in == 1) {
-			params[count][1] += 1;
+			params[count].length += 1;
 		}
 
 		// next char
 		++i;
-		++c;
 	}
 
 	// sort the array in place
-	sort_params(&params, count, url);
+	qsort(params, count+1, sizeof(param), param_compare);
 
 	// initialize our return value
-	char[len] sorted_url = *url;
+	char *sorted_url = (char*) malloc(len + 1);
+	strcpy(sorted_url, url);
 
 	// create a cursor and advance it to where
 	// we want to start rewriting the query string
-	char* cursor = &sorted_url;
-	while (*cursor != '?' && *cursor != '\0')
-		++cursor;
-	++cursor;
+	char* cursor = strchr(sorted_url, '?');
 
 	// build the sorted url
 	for (int i = 0; i <= count; ++i) {
 
-		while (params[i][1]-- > 0) {
+		// advance the cursor
+		// on first iteration places it
+		// on char after '?''
+		++cursor;
+
+		while (params[i].length-- > 0) {
 
 			// write the value
-			*cursor = url[params[i][0]++];
-
 			// advance the cursor
-			cursor++;
+			*cursor++ = *params[i].start++;
 
 		}
 
 		// add the delimiter back in manually
 		*cursor = '&';
 
-		// advance the cursor
-		cursor++;
-
 	}
 
 	// replace last char (extra &) with null terminator
 	*cursor = '\0';
 
-	return &sorted_url;
+	return sorted_url;
 }
 
 
@@ -122,9 +104,15 @@ char* url_sort(const char* url){
 
 int main(int argc, char** argv){
 	char* out = NULL;
+	out = url_sort("http://localhost/test?1");
+	printf("%s\n",out );
+	out = url_sort("http://localhost/test?2&aaa=111");
+	printf("%s\n",out );
+	out = url_sort("http://localhost/test?ddd=&bbb=222&3&aaa=111");
+	printf("%s\n",out );
 	out = url_sort("http://localhost/test?ddd=444&bbb=222&ccc=333&aaa=111");
 	printf("%s\n",out );
-	out = url_sort("http://localhost/test?ccc=333&aaa=111&ddd=444&bbb=222");
+	out = url_sort("http://localhost/test?ccc=333&ccc=111&ddd=444&bbb=222");
 	printf("%s\n",out );
 	out = url_sort("http://localhost/test?bbb=222&ccc=333&ddd=444&aaa=111");
 	printf("%s\n",out );
