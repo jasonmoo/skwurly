@@ -40,7 +40,6 @@ char* url_sort(const char* url){
 	// reuse count to track what param we're on
 	i = url;
 	count = -1;
-	int in = 0;
 
 	// scan to build params set
 	while (*i != '\0') {
@@ -48,13 +47,11 @@ char* url_sort(const char* url){
 		// note the start of the param
 		if (*i == '&' || *i == '?') {
 			params[++count].start = i+1;
-			params[count].length = -1;
-			in = 1;
+			params[count].length = 0;
 		}
-
 		// count the length of the param
-		if (in == 1) {
-			params[count].length += 1;
+		else if (count > -1) {
+			++params[count].length;
 		}
 
 		// next char
@@ -65,20 +62,21 @@ char* url_sort(const char* url){
 	qsort(params, count+1, sizeof(param), param_compare);
 
 	// initialize our return value
-	char *sorted_url = (char*) malloc(len + 1);
-	strcpy(sorted_url, url);
+	char* sorted_url = (char*) malloc(len + 1);
 
-	// create a cursor and advance it to where
-	// we want to start rewriting the query string
-	char* cursor = strchr(sorted_url, '?');
+	// initialize cursor
+	char* cursor = sorted_url;
+
+	// write the url up to the first '?'
+	// reset pointer to beginning of string
+	i = url;
+	while (*i != '?' && *i != '\0') {
+		*cursor++ = *i++;
+	}
+	*cursor++ = '?';
 
 	// build the sorted url
 	for (int i = 0; i <= count; ++i) {
-
-		// advance the cursor
-		// on first iteration places it
-		// on char after '?''
-		++cursor;
 
 		while (params[i].length-- > 0) {
 
@@ -88,13 +86,13 @@ char* url_sort(const char* url){
 
 		}
 
-		// add the delimiter back in manually
-		*cursor = '&';
+		// add the delimiter in manually
+		*cursor++ = '&';
 
 	}
 
 	// replace last char (extra &) with null terminator
-	*cursor = '\0';
+	*(cursor-1) = '\0';
 
 	return sorted_url;
 }
