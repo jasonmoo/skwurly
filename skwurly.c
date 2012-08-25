@@ -12,41 +12,46 @@ int param_compare(const void* a, const void* b) {
 
 char* url_sort(const char* url){
 
-	const char* i = url;
+	char* cursor;
 	int len = 0, count = 0;
 
 	// initial scan to see what needs to be done
-	while (*i != '\0') {
+	while (*url != '\0') {
 		// count the string length
+		// can use this to get back to first char in url
 		++len;
 
 		// count the number of param delimeters
-		if (*i == '&' || *i == '?')
+		if (*url == '&') {
 			++count;
+		}
+		// add one for '?' and point cursor to it for future parsing
+		else if (*url == '?' && cursor == NULL) {
+			cursor = (char*) url;
+			++count;
+		}
 
 		// next char
-		++i;
+		++url;
 	}
 
 	// return the url if there is not enough to sort or empty string
 	if (count < 2 || len == 0) {
-		return (char*) url;
+		return (char*) url-len;
 	}
 
 	// initialize the params offset array
 	param params[count];
 
-	// reset pointer to beginning of string
 	// reuse count to track what param we're on
-	i = url;
 	count = -1;
 
-	// scan to build params set
-	while (*i != '\0') {
+	// scan from first '?' to end of string to build params set
+	while (*cursor != '\0') {
 
 		// note the start of the param
-		if (*i == '&' || *i == '?') {
-			params[++count].start = i+1;
+		if (*cursor == '&' || *cursor == '?') {
+			params[++count].start = cursor+1;
 			params[count].length = 0;
 		}
 		// count the length of the param
@@ -55,23 +60,24 @@ char* url_sort(const char* url){
 		}
 
 		// next char
-		++i;
+		++cursor;
 	}
 
-	// sort the array in place
+	// sort the array in place in reverse order for
+	// easier iteration later on
 	qsort(params, count+1, sizeof(param), param_compare);
 
 	// initialize our return value
 	char* sorted_url = (char*) malloc(len + 1);
 
-	// initialize cursor
-	char* cursor = sorted_url;
+	// restart cursor at beginning of new string
+	cursor = sorted_url;
 
 	// write the url up to the first '?'
 	// reset pointer to beginning of string
-	i = url;
-	while (*i != '?' && *i != '\0') {
-		*cursor++ = *i++;
+	url -= len;
+	while (*url != '?' && *url != '\0') {
+		*cursor++ = *url++;
 	}
 	*cursor++ = '?';
 
@@ -88,7 +94,6 @@ char* url_sort(const char* url){
 
 		// add the delimiter in manually
 		*cursor++ = '&';
-
 	}
 
 	// replace last char (extra &) with null terminator
