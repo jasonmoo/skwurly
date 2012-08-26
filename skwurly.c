@@ -51,23 +51,26 @@ char* url_sort(const char* url){
 	param params[count];
 
 	// reuse count to track what param we're on
-	count = -1;
+	count = 0;
 
-	// scan from first '?' to end of string to build params set
+	// set first value beginning after cursor position
+	params[count].start = ++cursor;
+	params[count].length = 0;
+
+	// scan the rest of the string to build params set
 	while (*cursor != '\0') {
 
 		// note the start of the param
-		if (*cursor == '&' || *cursor == '?') {
-			params[++count].start = cursor+1;
+		// cursor advances each time
+		if (*cursor++ == '&') {
+			params[++count].start = cursor;
 			params[count].length = 0;
 		}
 		// count the length of the param
-		else if (count > -1) {
+		else {
 			++params[count].length;
 		}
 
-		// next char
-		++cursor;
 	}
 
 	// sort the array in place in reverse order for
