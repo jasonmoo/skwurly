@@ -6,7 +6,7 @@
 
 int param_compare(const void* a, const void* b) {
 
-		return strcmp((*(param*)a).start, (*(param*)b).start);
+	return strcmp((*(param*)a).start, (*(param*)b).start);
 
 }
 
@@ -37,7 +37,8 @@ char* url_sort(const char* url){
 
 	// return the url if there is not enough to sort or empty string
 	if (count < 2 || len == 0) {
-		return (char*) url-len;
+		return strdup(url-len);
+		// return (char*) url-len;
 	}
 
 	// initialize the params offset array
@@ -103,25 +104,18 @@ char* url_sort(const char* url){
 }
 
 
-
-
 int main(int argc, char** argv){
-	char* out = NULL;
-	out = url_sort("http://localhost/test?1");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?2&aaa=111");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?ddd=&bbb=222&3&aaa=111");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?ddd=444&bbb=222&ccc=333&aaa=111");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?ccc=333&ccc=111&ddd=444&bbb=222");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?bbb=222&ccc=333&ddd=444&aaa=111");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?bbb=222&ccc=ßß∞§•øø&ddd=444&aaa=111&bbbb=1234&ccccccc=0");
-	printf("%s\n",out );
-	out = url_sort("http://localhost/test?bbb=222&cbcc=333&ddd=444&dddf=444&aaa=111&bbbb=1234&ccccccc=0&zaaaa=89&ccc=987987");
-	printf("%s\n",out );
+	char buf[2048];
+	char* out;
+	int in_len;
+	while(fgets(buf,2048,stdin) != NULL){
+		//chopping off newlines
+		buf[strcspn(buf, "\n")] = '\0';
+		if (buf[0] == '\0')
+		    continue;
+		out = url_sort(buf);
+		free(out);
+		// printf("Orig: %s\nSort: %s\n\n",buf, out );
+	}
 	return 0;
 }
