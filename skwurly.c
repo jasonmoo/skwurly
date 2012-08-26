@@ -18,7 +18,7 @@ int param_compare(const void* a, const void* b) {
 
 char* url_sort(const char* url){
 
-	char* cursor;
+	char* cursor = NULL;
 	int len = 0, count = 0;
 
 	// initial scan to see what needs to be done
@@ -41,8 +41,8 @@ char* url_sort(const char* url){
 		++url;
 	}
 
-	// return the url if there is not enough to sort or empty string
-	if (count < 2 || len == 0) {
+	// return the url if there is not enough to sort or empty string or never found a '?'
+	if (count < 2 || len == 0 || cursor == NULL) {
 		return strdup(url-len);
 		// return (char*) url-len;
 	}
@@ -113,7 +113,6 @@ char* url_sort(const char* url){
 int main(int argc, char** argv){
 	char buf[2048];
 	char* out;
-	int in_len;
 	while(fgets(buf,2048,stdin) != NULL){
 		//chopping off newlines
 		buf[strcspn(buf, "\n")] = '\0';
