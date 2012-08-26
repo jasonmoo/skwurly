@@ -21,7 +21,23 @@ char* url_sort(const char* url){
 	char* cursor = NULL;
 	int len = 0, count = 0;
 
-	// initial scan to see what needs to be done
+	// scan to first '?', mark it and break
+	while (*url != '\0') {
+		// count the string length
+		// can use this to get back to first char in url
+		++len;
+
+		if (*url == '?') {
+			cursor = (char*) url++;
+			count = 1;
+			break;
+		}
+
+		// next char
+		++url;
+	}
+
+	// scan the rest of the string for '&' tokens
 	while (*url != '\0') {
 		// count the string length
 		// can use this to get back to first char in url
@@ -29,11 +45,6 @@ char* url_sort(const char* url){
 
 		// count the number of param delimeters
 		if (*url == '&') {
-			++count;
-		}
-		// add one for '?' and point cursor to it for future parsing
-		else if (*url == '?' && cursor == NULL) {
-			cursor = (char*) url;
 			++count;
 		}
 
@@ -123,7 +134,7 @@ int main(int argc, char** argv){
 		    continue;
 		out = url_sort(buf);
 		free(out);
-		// printf("Orig: %s\nSort: %s\n\n",buf, out );
+		printf("Orig: %s\nSort: %s\n\n",buf, out );
 	}
 	return 0;
 }
