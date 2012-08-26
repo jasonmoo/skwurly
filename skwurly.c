@@ -103,7 +103,8 @@ char* url_sort(const char* url){
 	*cursor++ = '?';
 
 	// build the sorted url
-	for (int i = 0; i <= count; ++i) {
+	int i = 0;
+	for (; i <= count; ++i) {
 
 		while (params[i].length-- > 0) {
 
@@ -134,7 +135,7 @@ int main(int argc, char** argv){
 		    continue;
 		out = url_sort(buf);
 		free(out);
-		printf("Orig: %s\nSort: %s\n\n",buf, out );
+		// printf("Orig: %s\nSort: %s\n\n",buf, out );
 	}
 	return 0;
 }
