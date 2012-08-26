@@ -6,7 +6,13 @@
 
 int param_compare(const void* a, const void* b) {
 
-	return strcmp((*(param*)a).start, (*(param*)b).start);
+	char aa = *(*(param*)a).start;
+	char bb = *(*(param*)b).start;
+
+	if (aa == bb) {
+		return strcmp((*(param*)a).start+1, (*(param*)b).start+1);
+	}
+	return aa - bb;
 
 }
 
