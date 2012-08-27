@@ -3,118 +3,101 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_PARAMS 32
 
-int param_compare(const void* a, const void* b) {
+char* url_sort(const char* url) {
 
-	char aa = *(*(param*)a).start;
-	char bb = *(*(param*)b).start;
-
-	if (aa == bb) {
-		return strcmp((*(param*)a).start+1, (*(param*)b).start+1);
-	}
-	return aa - bb;
-
-}
-
-char* url_sort(const char* url){
-
-	char* cursor = NULL;
-	int len = 0, count = 0;
+	// building an array with twice the number of params
+	// and working from middle of array
+	// to remove shuffling requirement on prepending
+	const char* params[MAX_PARAMS*2];
+	const char* orig_url = url;
 
 	// scan to first '?', mark it and break
-	while (*url != '\0') {
-		// count the string length
-		// can use this to get back to first char in url
-		++len;
+	for (;*url != '?' && *url != '\0';++url);
 
-		if (*url == '?') {
-			cursor = (char*) url++;
-			count = 1;
-			break;
-		}
+	// set the cursor at '?' or '\0'
+	char* cursor = (char*) url++;
 
-		// next char
-		++url;
-	}
+	// param count
+	int count = 0;
 
-	// scan the rest of the string for '&' tokens
-	while (*url != '\0') {
-		// count the string length
-		// can use this to get back to first char in url
-		++len;
+	// building 2x array to make head/tail sorted insertion O(N)
+	// start insertion at middle
+	// [NULL,NULL,NULL,<val>,<val>,NULL,NULL,NULL]
+	int HEAD = MAX_PARAMS;
+	int TAIL = MAX_PARAMS;
 
-		// count the number of param delimeters
+	// set initial param
+	params[HEAD] = url;
+
+	// and find the others
+	for (; *url != '\0'; ++url) {
+
 		if (*url == '&') {
-			++count;
-		}
 
-		// next char
-		++url;
+			if (count++ == MAX_PARAMS) {
+				return (char*) orig_url;
+			}
+
+			const char* p = url+1;
+
+			// if it sorts to before head just insert it and move HEAD to it
+			if (*params[HEAD] - *p > -1 || strcmp(params[HEAD], p) > -1) {
+				params[--HEAD] = p;
+				continue;
+			}
+
+			// if it sorts after TAIL just insert it and move TAIL to it
+			if (*params[TAIL] - *p < -1 || strcmp(params[TAIL], p) < -1) {
+				params[++TAIL] = p;
+				continue;
+			}
+
+			// // move tail on place after end
+			params[TAIL+1] = params[TAIL];
+
+			// shuffle elements up starting at tail until we hit the right spot
+			int i = TAIL;
+			for (; i > HEAD && (*params[i-1] - *p > -1 || strcmp(params[i-1], p) > -1); --i) {
+				params[i] = params[i-1];
+			}
+
+			// insert the new value
+			params[i] = p;
+
+			// set tail to new length
+			++TAIL;
+
+		}
 	}
 
-	// return the url if there is not enough to sort or empty string or never found a '?'
-	if (count < 2 || len == 0 || cursor == NULL) {
-		return strdup(url-len);
-		// return (char*) url-len;
+	// if there's no '?'
+	// or less than 2 params found
+	if (cursor == '\0' || count < 1) {
+		return (char*) orig_url;
 	}
-
-	// initialize the params offset array
-	param params[count];
-
-	// reuse count to track what param we're on
-	count = 0;
-
-	// set first value beginning after cursor position
-	params[count].start = ++cursor;
-	params[count].length = 0;
-
-	// scan the rest of the string to build params set
-	while (*cursor != '\0') {
-
-		// note the start of the param
-		// cursor advances each time
-		if (*cursor++ == '&') {
-			params[++count].start = cursor;
-			params[count].length = 0;
-		}
-		// count the length of the param
-		else {
-			++params[count].length;
-		}
-
-	}
-
-	// sort the array in place in reverse order for
-	// easier iteration later on
-	qsort(params, count+1, sizeof(param), param_compare);
 
 	// initialize our return value
-	char* sorted_url = (char*) malloc(len + 1);
+	char* sorted_url = (char*) malloc(url - orig_url);
 
-	// restart cursor at beginning of new string
-	cursor = sorted_url;
+	// determine length of chars up to and including '?'
+	int uri_len = (cursor+1) - orig_url;
 
-	// write the url up to the first '?'
-	// reset pointer to beginning of string
-	url -= len;
-	while (*url != '?' && *url != '\0') {
-		*cursor++ = *url++;
-	}
-	*cursor++ = '?';
+	// reuse cursor now that it's no longer needed to keep a pointer to '?'
+	cursor = (char*) sorted_url;
+
+	// copy in chars up to and including '?'
+	memcpy(sorted_url, orig_url, uri_len);
+
+	// move the cursor after the '?'
+	cursor += uri_len;
 
 	// build the sorted url
-	int i = 0;
-	for (; i <= count; ++i) {
-
-		while (params[i].length-- > 0) {
-
-			// write the value
-			// advance the cursor
-			*cursor++ = *params[i].start++;
-
+	for (; HEAD <= TAIL; ++HEAD) {
+		while (*params[HEAD] != '\0' && *params[HEAD] != '&') {
+			*cursor++ = *params[HEAD]++;
 		}
-
-		// add the delimiter in manually
 		*cursor++ = '&';
 	}
 
@@ -130,12 +113,15 @@ int main(int argc, char** argv){
 	char* out;
 	while(fgets(buf,2048,stdin) != NULL){
 		//chopping off newlines
-		buf[strcspn(buf, "\n")] = '\0';
+		buf[strlen(buf)-1] = '\0';
 		if (buf[0] == '\0')
 		    continue;
 		out = url_sort(buf);
-		free(out);
 		// printf("Orig: %s\nSort: %s\n\n",buf, out );
+
+		if (buf != out) {
+			free(out);
+		}
 	}
 	return 0;
 }
