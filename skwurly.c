@@ -19,9 +19,6 @@ char* url_sort(const char* url) {
 	// set the cursor at '?'
 	char* cursor = (char*) url;
 
-	// param count
-	int count = 0;
-
 	// building 2x array to make head/tail insertion O(1)
 	// start insertion at middle
 	// [NULL,NULL,NULL,<val>,<val>,NULL,NULL,NULL]
@@ -36,7 +33,7 @@ char* url_sort(const char* url) {
 
 		if (*url == '&') {
 
-			if (count++ == MAX_PARAMS) {
+			if (TAIL-HEAD == MAX_PARAMS) {
 				return (char*) orig_url;
 			}
 
@@ -73,7 +70,7 @@ char* url_sort(const char* url) {
 	}
 
 	// or less than 2 params found
-	if (count < 1) {
+	if (TAIL-HEAD < 2) {
 		return (char*) orig_url;
 	}
 
