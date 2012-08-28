@@ -8,4 +8,4 @@ else
 	seq="seq"
 fi
 
-time for i in `$seq 3`; do ./skwurly < 5Murls.txt > /dev/null ; done
+time for i in `$seq 10`; do ./skwurly < 5Murls.txt > /dev/null ; done
