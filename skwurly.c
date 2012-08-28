@@ -70,7 +70,7 @@ char* url_sort(const char* url) {
 	}
 
 	// or less than 2 params found
-	if (TAIL-HEAD < 2) {
+	if (TAIL-HEAD < 1) {
 		return (char*) orig_url;
 	}
 
