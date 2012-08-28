@@ -25,7 +25,7 @@ char* url_sort(const char* url) {
 	// param count
 	int count = 0;
 
-	// building 2x array to make head/tail sorted insertion O(N)
+	// building 2x array to make head/tail insertion O(1)
 	// start insertion at middle
 	// [NULL,NULL,NULL,<val>,<val>,NULL,NULL,NULL]
 	int HEAD = MAX_PARAMS;
@@ -57,20 +57,18 @@ char* url_sort(const char* url) {
 				continue;
 			}
 
-			// // move tail on place after end
+			// move tail to spot after end
 			params[TAIL+1] = params[TAIL];
 
 			// shuffle elements up starting at tail until we hit the right spot
-			int i = TAIL;
+			// and set tail to new length
+			int i = TAIL++;
 			for (; i > HEAD && (*params[i-1] - *p > -1 || strcmp(params[i-1], p) > -1); --i) {
 				params[i] = params[i-1];
 			}
 
 			// insert the new value
 			params[i] = p;
-
-			// set tail to new length
-			++TAIL;
 
 		}
 	}
@@ -99,19 +97,19 @@ char* url_sort(const char* url) {
 	for (; HEAD <= TAIL; ++HEAD) {
 
 		const char* end = strchr(params[HEAD], '&');
-		int param_len;
 
 		if (end == NULL) {
-			param_len = strlen(params[HEAD]);
+			int param_len = strlen(params[HEAD]);
 			memcpy(cursor, params[HEAD], param_len);
+			cursor += param_len;
+			*cursor++ = '&';
 		}
 		else {
-			param_len = end - params[HEAD];
+			int param_len = end - params[HEAD]+1;
 			memcpy(cursor, params[HEAD], param_len);
+			cursor += param_len;
 		}
-		cursor += param_len;
 
-		*cursor++ = '&';
 	}
 
 	// replace last char (extra &) with null terminator
