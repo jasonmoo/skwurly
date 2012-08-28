@@ -10,7 +10,7 @@ char* url_sort(const char* url) {
 	const char* params[MAX_PARAMS*2];
 	const char* orig_url = url;
 
-	// scan to first '?', mark it and break
+	// scan to first '?'
 	url = strchr(url, '?');
 	if (url == NULL) {
 		return (char *) orig_url;
