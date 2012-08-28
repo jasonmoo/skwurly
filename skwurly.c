@@ -37,17 +37,19 @@ char* url_sort(const char* url) {
 				return (char*) orig_url;
 			}
 
+			// grab a pointer to the param and the first char for easy action
 			const char* p = url+1;
+			register int pc = *p;
 
 			// if it sorts to before head just insert it and move HEAD to it
-			int c = *params[HEAD] - *p;
+			int c = *params[HEAD] - pc;
 			if (c > 0 || (c == 0 && strcmp(params[HEAD], p) > -1)) {
 				params[--HEAD] = p;
 				continue;
 			}
 
 			// if it sorts after TAIL just insert it and move TAIL to it
-			c = *params[TAIL] - *p;
+			c = *params[TAIL] - pc;
 			if (c < 0 || (c == 0 && strcmp(params[TAIL], p) < 1)) {
 				params[++TAIL] = p;
 				continue;
@@ -59,7 +61,7 @@ char* url_sort(const char* url) {
 			// shuffle elements up starting at tail until we hit the right spot
 			// and set tail to new length
 			int i = TAIL++;
-			for (c = *params[i-1] - *p; i > HEAD && c > 0 || (c == 0 && strcmp(params[i-1], p) > -1); c = *params[--i-1] - *p) {
+			for (c = *params[i-1] - pc; i > HEAD && c > 0 || (c == 0 && strcmp(params[i-1], p) > -1); c = *params[--i-1] - pc) {
 				params[i] = params[i-1];
 			}
 
