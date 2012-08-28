@@ -14,10 +14,13 @@ char* url_sort(const char* url) {
 	const char* orig_url = url;
 
 	// scan to first '?', mark it and break
-	for (;*url != '?' && *url != '\0';++url);
+	url = strchr(url, '?');
+	if (url == NULL) {
+		return (char *) orig_url;
+	}
 
-	// set the cursor at '?' or '\0'
-	char* cursor = (char*) url++;
+	// set the cursor at '?'
+	char* cursor = (char*) url;
 
 	// param count
 	int count = 0;
@@ -29,7 +32,7 @@ char* url_sort(const char* url) {
 	int TAIL = MAX_PARAMS;
 
 	// set initial param
-	params[HEAD] = url;
+	params[HEAD] = ++url;
 
 	// and find the others
 	for (; *url != '\0'; ++url) {
@@ -72,14 +75,13 @@ char* url_sort(const char* url) {
 		}
 	}
 
-	// if there's no '?'
 	// or less than 2 params found
-	if (cursor == '\0' || count < 1) {
+	if (count < 1) {
 		return (char*) orig_url;
 	}
 
 	// initialize our return value
-	char* sorted_url = (char*) malloc(url - orig_url);
+	char* sorted_url = (char*) malloc(url - orig_url+1);
 
 	// determine length of chars up to and including '?'
 	int uri_len = (cursor+1) - orig_url;
