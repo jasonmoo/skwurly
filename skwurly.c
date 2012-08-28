@@ -97,9 +97,20 @@ char* url_sort(const char* url) {
 
 	// build the sorted url
 	for (; HEAD <= TAIL; ++HEAD) {
-		while (*params[HEAD] != '\0' && *params[HEAD] != '&') {
-			*cursor++ = *params[HEAD]++;
+
+		const char* end = strchr(params[HEAD], '&');
+		int param_len;
+
+		if (end == NULL) {
+			param_len = strlen(params[HEAD]);
+			memcpy(cursor, params[HEAD], param_len);
 		}
+		else {
+			param_len = end - params[HEAD];
+			memcpy(cursor, params[HEAD], param_len);
+		}
+		cursor += param_len;
+
 		*cursor++ = '&';
 	}
 
