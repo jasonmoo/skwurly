@@ -14,8 +14,6 @@ char* url_sort(const char* url) {
 	// and working from middle of array
 	// to remove shuffling requirement on prepending
 	const char* params[MAX_PARAMS*2];
-
-
 	int param_length[MAX_PARAMS*2];
 
 	const char* orig_url = url;
@@ -42,7 +40,7 @@ char* url_sort(const char* url) {
 	int LAST_PARAM = HEAD;
 
 	// and find the others
-	for (; *url != '\0'; ++url) {
+	for (; *url; ++url) {
 
 		if (*url == '&') {
 
@@ -50,8 +48,8 @@ char* url_sort(const char* url) {
 				return (char*) orig_url;
 			}
 
-			int length = url - params[LAST_PARAM];
-			param_length[LAST_PARAM] = length;
+			// set the length of the previous param
+			param_length[LAST_PARAM] = url - params[LAST_PARAM];
 
 			// grab a pointer to the param and the first char for easy action
 			const char* p = url+1;
@@ -90,8 +88,7 @@ char* url_sort(const char* url) {
 	}
 
 	// set the last length now that we're at the end of the string
-	int length = url - params[LAST_PARAM];
-	param_length[LAST_PARAM] = length;
+	param_length[LAST_PARAM] = url - params[LAST_PARAM];
 
 	// or less than 2 params found
 	if (TAIL-HEAD < 1) {
