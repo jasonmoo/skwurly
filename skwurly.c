@@ -8,6 +8,10 @@ char* url_sort(const char* url) {
 	// and working from middle of array
 	// to remove shuffling requirement on prepending
 	const char* params[MAX_PARAMS*2];
+
+
+	int param_length[MAX_PARAMS*2];
+
 	const char* orig_url = url;
 
 	// scan to first '?'
@@ -27,6 +31,9 @@ char* url_sort(const char* url) {
 
 	// set initial param
 	params[HEAD] = ++url;
+	param_length[HEAD] = 0;
+
+	int LAST_PARAM = HEAD;
 
 	// and find the others
 	for (; *url != '\0'; ++url) {
@@ -37,6 +44,9 @@ char* url_sort(const char* url) {
 				return (char*) orig_url;
 			}
 
+			int length = url - params[LAST_PARAM];
+			param_length[LAST_PARAM] = length;
+
 			// grab a pointer to the param and the first char for easy action
 			const char* p = url+1;
 			register int pc = *p;
@@ -45,6 +55,7 @@ char* url_sort(const char* url) {
 			int c = *params[HEAD] - pc;
 			if (c > 0 || (c == 0 && strcmp(params[HEAD], p) > -1)) {
 				params[--HEAD] = p;
+				LAST_PARAM = HEAD;
 				continue;
 			}
 
@@ -52,24 +63,33 @@ char* url_sort(const char* url) {
 			c = *params[TAIL] - pc;
 			if (c < 0 || (c == 0 && strcmp(params[TAIL], p) < 1)) {
 				params[++TAIL] = p;
+				LAST_PARAM = TAIL;
 				continue;
 			}
 
 			// move tail to spot after end
 			params[TAIL+1] = params[TAIL];
+			param_length[TAIL+1] = param_length[TAIL];
+
 
 			// shuffle elements up starting at tail until we hit the right spot
 			// and set tail to new length
 			int i = TAIL++;
-			for (c = *params[i-1] - pc; i > HEAD && c > 0 || (c == 0 && strcmp(params[i-1], p) > -1); c = *params[--i-1] - pc) {
+			for (c = *params[i-1] - pc; i > HEAD && (c > 0 || (c == 0 && strcmp(params[i-1], p) > -1)); c = *params[--i-1] - pc) {
 				params[i] = params[i-1];
+				param_length[i] = param_length[i-1];
 			}
 
 			// insert the new value
 			params[i] = p;
+			LAST_PARAM = i;
 
 		}
 	}
+
+	// set the last length now that we're at the end of the string
+	int length = url - params[LAST_PARAM];
+	param_length[LAST_PARAM] = length;
 
 	// or less than 2 params found
 	if (TAIL-HEAD < 1) {
@@ -83,30 +103,19 @@ char* url_sort(const char* url) {
 	int uri_len = (cursor+1) - orig_url;
 
 	// reuse cursor now that it's no longer needed to keep a pointer to '?'
-	cursor = (char*) sorted_url;
+	cursor = (char*) sorted_url + uri_len;
 
 	// copy in chars up to and including '?'
 	memcpy(sorted_url, orig_url, uri_len);
 
-	// move the cursor after the '?'
-	cursor += uri_len;
+	printf("%s\n", cursor-uri_len);
 
 	// build the sorted url
 	for (; HEAD <= TAIL; ++HEAD) {
-
-		const char* end = strchr(params[HEAD], '&');
-
-		if (end == NULL) {
-			int param_len = strlen(params[HEAD]);
-			memcpy(cursor, params[HEAD], param_len);
-			cursor += param_len;
-			*cursor++ = '&';
-		}
-		else {
-			int param_len = end - params[HEAD]+1;
-			memcpy(cursor, params[HEAD], param_len);
-			cursor += param_len;
-		}
+		memcpy(cursor, params[HEAD], param_length[HEAD]);
+		// printf("%d: %s\t%s\n", param_length[HEAD], params[HEAD], cursor);
+		cursor += param_length[HEAD];
+		*cursor++ = '&';
 
 	}
 
