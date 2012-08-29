@@ -2,6 +2,12 @@
 
 #define MAX_PARAMS 32
 
+static inline int str_compare(const char* a, const char* b) {
+	for(;*a == *b; ++a, ++b)
+		if (*a == '\0') return 0;
+	return *a - *b;
+}
+
 char* url_sort(const char* url) {
 
 	// building an array with twice the number of params
@@ -49,19 +55,16 @@ char* url_sort(const char* url) {
 
 			// grab a pointer to the param and the first char for easy action
 			const char* p = url+1;
-			register int pc = *p;
 
 			// if it sorts to before head just insert it and move HEAD to it
-			int c = *params[HEAD] - pc;
-			if (c > 0 || (c == 0 && strcmp(params[HEAD], p) > -1)) {
+			if (str_compare(params[HEAD], p) > -1) {
 				params[--HEAD] = p;
 				LAST_PARAM = HEAD;
 				continue;
 			}
 
 			// if it sorts after TAIL just insert it and move TAIL to it
-			c = *params[TAIL] - pc;
-			if (c < 0 || (c == 0 && strcmp(params[TAIL], p) < 1)) {
+			if (str_compare(params[TAIL], p) < 1) {
 				params[++TAIL] = p;
 				LAST_PARAM = TAIL;
 				continue;
@@ -71,11 +74,10 @@ char* url_sort(const char* url) {
 			params[TAIL+1] = params[TAIL];
 			param_length[TAIL+1] = param_length[TAIL];
 
-
 			// shuffle elements up starting at tail until we hit the right spot
 			// and set tail to new length
 			int i = TAIL++;
-			for (c = *params[i-1] - pc; i > HEAD && (c > 0 || (c == 0 && strcmp(params[i-1], p) > -1)); c = *params[--i-1] - pc) {
+			for (; i > HEAD && str_compare(params[i-1], p) > -1; --i) {
 				params[i] = params[i-1];
 				param_length[i] = param_length[i-1];
 			}
@@ -108,10 +110,9 @@ char* url_sort(const char* url) {
 	// copy in chars up to and including '?'
 	memcpy(sorted_url, orig_url, uri_len);
 
-	printf("%s\n", cursor-uri_len);
-
 	// build the sorted url
-	for (; HEAD <= TAIL; ++HEAD) {
+	int iter = TAIL-HEAD+1;
+	for (;iter--; ++HEAD) {
 		memcpy(cursor, params[HEAD], param_length[HEAD]);
 		// printf("%d: %s\t%s\n", param_length[HEAD], params[HEAD], cursor);
 		cursor += param_length[HEAD];
