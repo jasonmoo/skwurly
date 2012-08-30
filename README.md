@@ -5,4 +5,4 @@ Sorting urls like it ain't no thang
 
 run `run_test.sh` to build and test  (expects 5Murls.txt file to be present in local dir)
 
-~695k urls per second ('06 mbp 2.16 ghz)
+1.7M urls per second on a macbook pro
