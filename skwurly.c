@@ -76,15 +76,15 @@ char* url_sort(const char* url) {
 			sorted = 0;
 
 			// move tail to spot after end
-			params[TAIL+1] = params[TAIL];
-			param_length[TAIL+1] = param_length[TAIL];
-
+			int i = TAIL++;
+			params[TAIL] = params[i];
+			param_length[TAIL] = param_length[i];
 			// shuffle elements up starting at tail until we hit the right spot
 			// and set tail to new length
-			int i = TAIL++;
-			for (; i > HEAD && str_compare(params[i-1], p) > -1; --i) {
-				params[i] = params[i-1];
-				param_length[i] = param_length[i-1];
+			int prev = i-1;
+			for (; i > HEAD && str_compare(params[prev], p) > -1; --i, --prev) {
+				params[i] = params[prev];
+				param_length[i] = param_length[prev];
 			}
 
 			// insert the new value
