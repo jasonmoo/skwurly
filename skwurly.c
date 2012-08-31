@@ -38,7 +38,6 @@ char* url_sort(const char* url) {
 
 	// set initial param
 	params[HEAD] = ++url;
-	param_length[HEAD] = 0;
 
 	int LAST_PARAM = HEAD;
 
