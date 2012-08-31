@@ -14,7 +14,7 @@ char* url_sort(const char* url) {
 	// and working from middle of array
 	// to remove shuffling requirement on prepending
 	const char* params[MAX_PARAMS*2];
-	int param_length[MAX_PARAMS*2];
+	unsigned short param_length[MAX_PARAMS*2];
 
 	const char* orig_url = url;
 
