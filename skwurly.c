@@ -112,11 +112,8 @@ char* url_sort(const char* url) {
 	// initialize our return value
 	char* sorted_url = (char*) malloc(url - orig_url+1);
 
-	// determine length of chars up to and including '?'
-	int uri_len = (cursor+1) - orig_url;
-
 	// copy in chars up to and including '?'
-	cursor = mempcpy(sorted_url, orig_url, uri_len);
+	cursor = mempcpy(sorted_url, orig_url, (cursor+1) - orig_url);
 
 	// build the sorted url
 	int iter = TAIL-HEAD;
