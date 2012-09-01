@@ -1,5 +1,13 @@
 #include "skwurly.h"
 
+/// jank to enable mempcpy on mac
+#ifndef mempcpy
+	static inline char* mempcpy(void* d, const char* s, unsigned long l) {
+		// printf("%s : %s : %d\n", d, s, l);
+		return (char*) memcpy(d,s,l)+l;
+	}
+#endif
+
 #define MAX_PARAMS 32
 
 static inline int str_compare(const char* a, const char* b) {
@@ -107,24 +115,19 @@ char* url_sort(const char* url) {
 	// determine length of chars up to and including '?'
 	int uri_len = (cursor+1) - orig_url;
 
-	// reuse cursor now that it's no longer needed to keep a pointer to '?'
-	cursor = (char*) sorted_url + uri_len;
-
 	// copy in chars up to and including '?'
-	memcpy(sorted_url, orig_url, uri_len);
+	cursor = mempcpy(sorted_url, orig_url, uri_len);
 
 	// build the sorted url
-	int iter = TAIL-HEAD+1;
+	int iter = TAIL-HEAD;
 
 	for (;iter--; ++HEAD) {
-		memcpy(cursor, params[HEAD], param_length[HEAD]);
+		cursor = mempcpy(cursor, params[HEAD], param_length[HEAD]);
 		// printf("%d: %s\t%s\n", param_length[HEAD], params[HEAD], cursor);
-		cursor += param_length[HEAD];
 		*cursor++ = '&';
 	}
-
-	// replace last char (extra &) with null terminator
-	*(cursor-1) = '\0';
+	cursor = mempcpy(cursor, params[HEAD], param_length[HEAD]);
+	*cursor = '\0';
 
 	return sorted_url;
 }
