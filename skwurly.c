@@ -38,44 +38,44 @@ char* url_sort(const char* url) {
 	// building 2x array to make head/tail insertion O(1)
 	// start insertion at middle
 	// [NULL,NULL,NULL,<val>,<val>,NULL,NULL,NULL]
-	int HEAD = MAX_PARAMS;
-	int TAIL = MAX_PARAMS;
+	int head = MAX_PARAMS;
+	int tail = MAX_PARAMS;
 
 	// keep track of if the url is already in sorted order
 	int sorted = 1;
 
 	// set initial param
-	params[HEAD] = ++url;
+	params[head] = ++url;
 
-	int LAST_PARAM = HEAD;
+	int last_param = head;
 
 	// and find the others
 	for (; *url; ++url) {
 
 		if (*url == '&') {
 
-			if (TAIL-HEAD == MAX_PARAMS) {
+			if (tail-head == MAX_PARAMS) {
 				return (char*) orig_url;
 			}
 
 			// set the length of the previous param
-			param_length[LAST_PARAM] = url - params[LAST_PARAM];
+			param_length[last_param] = url - params[last_param];
 
 			// grab a pointer to the param and the first char for easy action
 			const char* p = url+1;
 
-			// if it sorts to before head just insert it and move HEAD to it
-			if (str_compare(params[HEAD], p) > -1) {
+			// if it sorts to before head just insert it and move head to it
+			if (str_compare(params[head], p) > -1) {
 				sorted = 0;
-				params[--HEAD] = p;
-				LAST_PARAM = HEAD;
+				params[--head] = p;
+				last_param = head;
 				continue;
 			}
 
-			// if it sorts after TAIL just insert it and move TAIL to it
-			if (str_compare(params[TAIL], p) < 1) {
-				params[++TAIL] = p;
-				LAST_PARAM = TAIL;
+			// if it sorts after tail just insert it and move tail to it
+			if (str_compare(params[tail], p) < 1) {
+				params[++tail] = p;
+				last_param = tail;
 				continue;
 			}
 
@@ -83,31 +83,31 @@ char* url_sort(const char* url) {
 			sorted = 0;
 
 			// move tail to spot after end
-			int i = TAIL++;
-			params[TAIL] = params[i];
-			param_length[TAIL] = param_length[i];
+			int i = tail++;
+			params[tail] = params[i];
+			param_length[tail] = param_length[i];
 			// shuffle elements up starting at tail until we hit the right spot
 			// and set tail to new length
 			int prev = i-1;
-			for (; i > HEAD && str_compare(params[prev], p) > -1; --i, --prev) {
+			for (; i > head && str_compare(params[prev], p) > -1; --i, --prev) {
 				params[i] = params[prev];
 				param_length[i] = param_length[prev];
 			}
 
 			// insert the new value
 			params[i] = p;
-			LAST_PARAM = i;
+			last_param = i;
 
 		}
 	}
 
 	// sorted will be 1 if theres only one param or if the url is already sorted
-	if (sorted == 1 || TAIL-HEAD < 1) {
+	if (sorted == 1 || tail-head < 1) {
 		return (char*) orig_url;
 	}
 
 	// set the last length now that we're at the end of the string
-	param_length[LAST_PARAM] = url - params[LAST_PARAM];
+	param_length[last_param] = url - params[last_param];
 
 	// initialize our return value
 	char* sorted_url = (char*) malloc(url - orig_url+1);
@@ -116,14 +116,14 @@ char* url_sort(const char* url) {
 	cursor = mempcpy(sorted_url, orig_url, (cursor+1) - orig_url);
 
 	// build the sorted url
-	int iter = TAIL-HEAD;
+	int iter = tail-head;
 
-	for (;iter--; ++HEAD) {
-		cursor = mempcpy(cursor, params[HEAD], param_length[HEAD]);
-		// printf("%d: %s\t%s\n", param_length[HEAD], params[HEAD], cursor);
+	for (;iter--; ++head) {
+		cursor = mempcpy(cursor, params[head], param_length[head]);
+		// printf("%d: %s\t%s\n", param_length[head], params[head], cursor);
 		*cursor++ = '&';
 	}
-	cursor = mempcpy(cursor, params[HEAD], param_length[HEAD]);
+	cursor = mempcpy(cursor, params[head], param_length[head]);
 	*cursor = '\0';
 
 	return sorted_url;
